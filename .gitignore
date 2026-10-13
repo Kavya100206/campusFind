@@ -35,7 +35,8 @@ crash.log
 
 # --- markdown: only README.md is committed ---
 *.md
-!README.md
+**/*.md
+!/README.md
 
 # --- agent / scratch / evidence (local only) ---
 scratch/
