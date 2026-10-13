@@ -1,21 +1,28 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from datetime import datetime, timezone
+from enum import Enum
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from .config import settings
 from .db import Base, engine, get_db
-from .models import Task
-from .schemas import StatsOut, TaskCreate, TaskOut, TaskUpdate
+from .models import Item
+from .schemas import ItemCategory, ItemCreate, ItemOut, ItemStatus, ItemUpdate, StatsOut
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 @app.on_event("startup")
 def startup():
-    # Production containers run Alembic before Uvicorn; create_all keeps tests self-contained.
+    # In production Docker, Alembic runs before Uvicorn; create_all ensures test safety
     Base.metadata.create_all(bind=engine)
 
 @app.get("/")
@@ -28,49 +35,113 @@ def health():
 
 @app.get("/ready")
 def ready(db: Session = Depends(get_db)):
-    db.execute(select(func.count(Task.id)))
+    db.execute(select(func.count(Item.id)))
     return {"status": "READY"}
 
-@app.get("/api/tasks", response_model=list[TaskOut])
-def list_tasks(db: Session = Depends(get_db)):
-    return list(db.scalars(select(Task).order_by(Task.id.desc())))
+@app.get("/api/items/stats", response_model=StatsOut)
+def get_item_stats(db: Session = Depends(get_db)):
+    status_rows = db.execute(select(Item.status, func.count(Item.id)).group_by(Item.status)).all()
+    status_counts = {s: c for s, c in status_rows}
 
-@app.get("/api/tasks/stats", response_model=StatsOut)
-def stats(db: Session = Depends(get_db)):
-    rows = db.execute(select(Task.status, func.count(Task.id)).group_by(Task.status)).all()
-    counts = {status: count for status, count in rows}
-    return StatsOut(total=sum(counts.values()), todo=counts.get("TODO", 0), inProgress=counts.get("IN_PROGRESS", 0), done=counts.get("DONE", 0))
+    category_rows = db.execute(select(Item.category, func.count(Item.id)).group_by(Item.category)).all()
+    category_counts = {c: count for c, count in category_rows}
 
-@app.get("/api/tasks/{task_id}", response_model=TaskOut)
-def get_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.get(Task, task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task
+    # Ensure all defined categories exist in stats dictionary
+    for cat in ItemCategory:
+        category_counts.setdefault(cat.value, 0)
 
-@app.post("/api/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
-def create_task(payload: TaskCreate, db: Session = Depends(get_db)):
-    task = Task(**payload.model_dump())
-    db.add(task)
+    total = sum(status_counts.values())
+    lost = status_counts.get(ItemStatus.LOST.value, 0)
+    found = status_counts.get(ItemStatus.FOUND.value, 0)
+    claimed = status_counts.get(ItemStatus.CLAIMED.value, 0)
+
+    return StatsOut(
+        total=total,
+        lost=lost,
+        found=found,
+        claimed=claimed,
+        by_category=category_counts,
+    )
+
+@app.get("/api/items", response_model=list[ItemOut])
+def list_items(
+    status: ItemStatus | None = Query(default=None),
+    category: ItemCategory | None = Query(default=None),
+    q: str | None = Query(default=None, description="Search term for title, description, or location"),
+    db: Session = Depends(get_db),
+):
+    query = select(Item)
+
+    if status:
+        query = query.where(Item.status == status.value)
+    if category:
+        query = query.where(Item.category == category.value)
+    if q and q.strip():
+        search_pattern = f"%{q.strip()}%"
+        query = query.where(
+            or_(
+                Item.title.ilike(search_pattern),
+                Item.description.ilike(search_pattern),
+                Item.location.ilike(search_pattern),
+            )
+        )
+
+    return list(db.scalars(query.order_by(Item.id.desc())))
+
+@app.post("/api/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
+def create_item(payload: ItemCreate, db: Session = Depends(get_db)):
+    item_data = payload.model_dump()
+    # Normalize enums to string values for database storage
+    if isinstance(item_data.get("category"), Enum):
+        item_data["category"] = item_data["category"].value
+    if isinstance(item_data.get("status"), Enum):
+        item_data["status"] = item_data["status"].value
+
+    item = Item(**item_data)
+    db.add(item)
     db.commit()
-    db.refresh(task)
-    return task
+    db.refresh(item)
+    return item
 
-@app.put("/api/tasks/{task_id}", response_model=TaskOut)
-def update_task(task_id: int, payload: TaskUpdate, db: Session = Depends(get_db)):
-    task = db.get(Task, task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    for key, value in payload.model_dump(exclude_unset=True).items():
-        setattr(task, key, value)
+@app.get("/api/items/{item_id}", response_model=ItemOut)
+def get_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.get(Item, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    return item
+
+@app.put("/api/items/{item_id}", response_model=ItemOut)
+def update_item(item_id: int, payload: ItemUpdate, db: Session = Depends(get_db)):
+    item = db.get(Item, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+
+    update_dict = payload.model_dump(exclude_unset=True)
+
+    # Validate status transition rule: once CLAIMED, cannot revert to LOST or FOUND
+    if "status" in update_dict and update_dict["status"] is not None:
+        target_status = update_dict["status"]
+        target_status_val = target_status.value if isinstance(target_status, Enum) else target_status
+        if item.status == ItemStatus.CLAIMED.value and target_status_val != ItemStatus.CLAIMED.value:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Claimed items cannot be reopened",
+            )
+
+    for key, value in update_dict.items():
+        if isinstance(value, Enum):
+            value = value.value
+        setattr(item, key, value)
+
+    item.updated_at = datetime.now(timezone.utc)
     db.commit()
-    db.refresh(task)
-    return task
+    db.refresh(item)
+    return item
 
-@app.delete("/api/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.get(Task, task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    db.delete(task)
+@app.delete("/api/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.get(Item, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    db.delete(item)
     db.commit()

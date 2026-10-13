@@ -12,9 +12,18 @@ def test_health():
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json()["service"] == "TaskBoard API"
+    assert response.json()["service"] == "CampusFind API"
 
-def test_create_task_validation():
-    response = client.post("/api/tasks", json={"title": "Deploy application", "priority": "HIGH", "assignee": "Student"})
+def test_create_item_validation():
+    response = client.post(
+        "/api/items",
+        json={
+            "title": "Blue Wireless Headphones",
+            "category": "ELECTRONICS",
+            "location": "Central Library",
+            "reporter_name": "Student A",
+        },
+    )
     assert response.status_code == 201
-    assert response.json()["title"] == "Deploy application"
+    assert response.json()["title"] == "Blue Wireless Headphones"
+    assert response.json()["category"] == "ELECTRONICS"
