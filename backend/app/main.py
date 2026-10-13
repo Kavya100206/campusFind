@@ -11,7 +11,18 @@ from .db import Base, engine, get_db
 from .models import Item
 from .schemas import ItemCategory, ItemCreate, ItemOut, ItemStatus, ItemUpdate, StatsOut
 
-app = FastAPI(title=settings.app_name, version="1.0.0")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Production containers run Alembic before Uvicorn; conftest handles in-memory test DB
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass
+    yield
+
+app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,11 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
-
-@app.on_event("startup")
-def startup():
-    # In production Docker, Alembic runs before Uvicorn; create_all ensures test safety
-    Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
