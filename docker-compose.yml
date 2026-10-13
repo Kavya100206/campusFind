@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: taskboard
-      POSTGRES_USER: taskboard
-      POSTGRES_PASSWORD: taskboard
+      POSTGRES_DB: campusfind
+      POSTGRES_USER: campusfind
+      POSTGRES_PASSWORD: campusfind
     ports:
       - "5432:5432"
     volumes:
@@ -13,7 +13,7 @@ services:
   backend:
     build: ./backend
     environment:
-      DATABASE_URL: postgresql+psycopg://taskboard:taskboard@postgres:5432/taskboard
+      DATABASE_URL: postgresql+psycopg://campusfind:campusfind@postgres:5432/campusfind
     depends_on:
       - postgres
     ports:
