@@ -1,0 +1,81 @@
+:root {
+  /* Surface & Background */
+  --color-bg-app: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-border: #e2e8f0;
+  
+  /* Form Inputs (border #64748b has contrast >= 3:1 against white/slate-50) */
+  --color-input-border: #64748b;
+  --color-input-border-focus: #0f766e;
+  
+  /* Text */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  
+  /* Primary Accent: Deep Teal */
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-primary-light: #ccfbf1;
+  --color-primary-text: #ffffff;
+  
+  /* Danger / Destructive Action */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-light: #fee2e2;
+  
+  /* Status Badges */
+  --color-badge-lost-bg: #fef3c7;
+  --color-badge-lost-text: #92400e;
+  --color-badge-lost-border: #fde68a;
+  
+  --color-badge-found-bg: #dcfce7;
+  --color-badge-found-text: #166534;
+  --color-badge-found-border: #bbf7d0;
+  
+  --color-badge-claimed-bg: #f1f5f9;
+  --color-badge-claimed-text: #334155;
+  --color-badge-claimed-border: #e2e8f0;
+  
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  /* Type Scale */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  
+  /* Spacing Scale */
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

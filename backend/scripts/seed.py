@@ -14,12 +14,12 @@ SAMPLE_ITEMS = [
         "reporter_name": "Aarav Sharma",
     },
     {
-        "title": "Student ID Card - Kavya Patel",
-        "description": "Found near the billing counter at lunch hour. Kept with cafeteria manager.",
+        "title": "Student ID Card",
+        "description": "Student ID card, name withheld, claim at security desk.",
         "category": "ID_CARD",
         "location": "Cafeteria, Counter 3",
         "status": "FOUND",
-        "reporter_name": "Ramesh Kumar",
+        "reporter_name": "Campus Security Officer",
     },
     {
         "title": "Calculus: Early Transcendentals",
