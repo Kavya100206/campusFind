@@ -1,3 +1,11 @@
+data "aws_availability_zones" "available" {
+  state = "available"
+  filter {
+    name   = "opt-in-status"
+    values = ["opt-in-not-required"]
+  }
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.8.1"
@@ -5,7 +13,7 @@ module "vpc" {
   name = "campusfind-vpc"
   cidr = "10.20.0.0/16"
 
-  azs             = ["${var.aws_region}a", "${var.aws_region}b"]
+  azs             = slice(data.aws_availability_zones.available.names, 0, 2)
   private_subnets = ["10.20.1.0/24", "10.20.2.0/24"]
   public_subnets  = ["10.20.101.0/24", "10.20.102.0/24"]
 

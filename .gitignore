@@ -27,6 +27,8 @@ frontend/dist/
 *.tfstate.*
 crash.log
 .terraform.lock.hcl.bak
+tfplan*
+*.tfplan
 
 # --- OS / editor ---
 .DS_Store

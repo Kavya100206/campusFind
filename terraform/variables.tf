@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS region for provisioning resources"
   type        = string
-  default     = "ap-south-1"
+  default     = "ap-southeast-2"
 }
 
 variable "cluster_name" {
@@ -31,11 +31,11 @@ variable "min_nodes" {
 variable "desired_nodes" {
   description = "Desired number of worker nodes"
   type        = number
-  default     = 3
+  default     = 2
 }
 
 variable "max_nodes" {
-  description = "Maximum number of worker nodes"
+  description = "Maximum number of worker nodes (capped at 2 to stay within 5 vCPU quota: 2x t3.medium = 4 vCPUs)"
   type        = number
-  default     = 4
+  default     = 2
 }
