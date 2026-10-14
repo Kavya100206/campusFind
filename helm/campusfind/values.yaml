@@ -43,4 +43,4 @@ resources:
 
 monitoring:
   serviceMonitor:
-    enabled: true
+    enabled: false
