@@ -4,8 +4,11 @@ kind: ServiceMonitor
 metadata:
   name: {{ include "campusfind.fullname" . }}-backend
   labels:
-    release: kube-prometheus-stack
+    release: monitoring
 spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
   selector:
     matchLabels:
       app: campusfind-backend

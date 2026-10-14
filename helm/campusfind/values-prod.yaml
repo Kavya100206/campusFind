@@ -33,3 +33,7 @@ postgres:
   persistence:
     storageClassName: ""
     size: 5Gi
+
+monitoring:
+  serviceMonitor:
+    enabled: true
