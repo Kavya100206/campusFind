@@ -1,0 +1,11 @@
+# Example configuration for CampusFind EKS Infrastructure
+# Copy this file to terraform.tfvars and customize as needed.
+# Note: terraform.tfvars is gitignored to avoid committing sensitive settings.
+
+aws_region         = "ap-south-1"
+cluster_name       = "campusfind-eks"
+environment        = "dev"
+node_instance_type = "t3.medium"
+min_nodes          = 2
+desired_nodes      = 3
+max_nodes          = 4

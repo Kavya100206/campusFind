@@ -1,3 +1,29 @@
-output "cluster_name" { value = module.eks.cluster_name }
-output "cluster_endpoint" { value = module.eks.cluster_endpoint }
-output "vpc_id" { value = module.vpc.vpc_id }
+output "cluster_name" {
+  description = "EKS cluster name"
+  value       = module.eks.cluster_name
+}
+
+output "cluster_endpoint" {
+  description = "EKS cluster control plane endpoint"
+  value       = module.eks.cluster_endpoint
+}
+
+output "vpc_id" {
+  description = "VPC ID"
+  value       = module.vpc.vpc_id
+}
+
+output "private_subnets" {
+  description = "List of private subnet IDs"
+  value       = module.vpc.private_subnets
+}
+
+output "public_subnets" {
+  description = "List of public subnet IDs"
+  value       = module.vpc.public_subnets
+}
+
+output "ebs_csi_role_arn" {
+  description = "IAM role ARN used by the AWS EBS CSI driver"
+  value       = aws_iam_role.ebs_csi_driver.arn
+}
