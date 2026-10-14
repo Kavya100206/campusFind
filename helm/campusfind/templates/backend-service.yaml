@@ -11,3 +11,17 @@ spec:
     - port: 8000
       targetPort: 8000
       name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: campusfind-backend
+spec:
+  selector:
+    app: campusfind-backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
