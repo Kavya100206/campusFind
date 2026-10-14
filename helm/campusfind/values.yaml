@@ -1,28 +1,46 @@
+image:
+  tag: ""
+
 frontend:
-  image: ghcr.io/YOUR_ORG/taskboard-frontend
-  tag: latest
+  image: ghcr.io/kavya100206/campusfind-frontend
+  tag: ""
+
 backend:
-  image: ghcr.io/YOUR_ORG/taskboard-backend
-  tag: latest
+  image: ghcr.io/kavya100206/campusfind-backend
+  tag: ""
+
 replicaCount: 2
-namespace: taskboard
+namespace: campusfind
 imagePullSecrets: []
+
 postgres:
-  host: taskboard-postgres
-  database: taskboard
-  username: taskboard
-  password: taskboard
+  host: campusfind-postgres
+  database: campusfind
+  username: campusfind
+  password: campusfind_dev_password
+  persistence:
+    storageClassName: ""
+    size: 5Gi
+
 ingress:
   enabled: false
-  host: taskboard.local
+  ingressClassName: traefik
+  host: localhost
+
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 6
   targetCPUUtilizationPercentage: 60
+
 resources:
-  requests: {cpu: 100m, memory: 256Mi}
-  limits: {cpu: 500m, memory: 512Mi}
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
 monitoring:
   serviceMonitor:
     enabled: true

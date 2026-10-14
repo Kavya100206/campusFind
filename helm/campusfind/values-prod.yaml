@@ -1,10 +1,35 @@
 frontend:
-  image: ghcr.io/YOUR_ORG/taskboard-frontend
+  image: ghcr.io/kavya100206/campusfind-frontend
+
 backend:
-  image: ghcr.io/YOUR_ORG/taskboard-backend
+  image: ghcr.io/kavya100206/campusfind-backend
+
 replicaCount: 2
+
 ingress:
   enabled: true
-  host: taskboard.example.com
+  ingressClassName: traefik
+  host: localhost
+
 hpa:
   enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 60
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+postgres:
+  host: campusfind-postgres
+  database: campusfind
+  username: campusfind
+  password: campusfind_dev_password
+  persistence:
+    storageClassName: ""
+    size: 5Gi
