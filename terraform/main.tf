@@ -88,6 +88,12 @@ module "eks" {
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
 
+  # Cost optimization for capstone demo: disable KMS CMK and CloudWatch log group
+  create_kms_key              = false
+  cluster_encryption_config   = {}
+  create_cloudwatch_log_group = false
+  cluster_enabled_log_types   = []
+
   cluster_addons = {
     aws-ebs-csi-driver = {
       most_recent              = true
