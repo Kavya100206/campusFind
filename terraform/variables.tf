@@ -19,7 +19,7 @@ variable "environment" {
 variable "node_instance_type" {
   description = "EC2 instance type for EKS managed node group"
   type        = string
-  default     = "t3.medium"
+  default     = "t3.small"
 }
 
 variable "min_nodes" {
@@ -35,7 +35,13 @@ variable "desired_nodes" {
 }
 
 variable "max_nodes" {
-  description = "Maximum number of worker nodes (capped at 2 to stay within 5 vCPU quota: 2x t3.medium = 4 vCPUs)"
+  description = "Maximum number of worker nodes (capped at 2 to stay within 5 vCPU quota: 2x t3.small = 4 vCPUs)"
   type        = number
   default     = 2
+}
+
+variable "enable_eks" {
+  description = "Controls whether EKS cluster, node groups, and NAT gateway are provisioned. Set to false for Plan B (VPC-only)."
+  type        = bool
+  default     = true
 }

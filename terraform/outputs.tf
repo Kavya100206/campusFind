@@ -1,11 +1,11 @@
 output "cluster_name" {
   description = "EKS cluster name"
-  value       = module.eks.cluster_name
+  value       = var.enable_eks ? module.eks.cluster_name : null
 }
 
 output "cluster_endpoint" {
   description = "EKS cluster control plane endpoint"
-  value       = module.eks.cluster_endpoint
+  value       = var.enable_eks ? module.eks.cluster_endpoint : null
 }
 
 output "vpc_id" {
@@ -25,5 +25,5 @@ output "public_subnets" {
 
 output "ebs_csi_role_arn" {
   description = "IAM role ARN used by the AWS EBS CSI driver"
-  value       = aws_iam_role.ebs_csi_driver.arn
+  value       = var.enable_eks ? try(aws_iam_role.ebs_csi_driver[0].arn, null) : null
 }

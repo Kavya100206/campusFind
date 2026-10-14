@@ -17,8 +17,8 @@ module "vpc" {
   private_subnets = ["10.20.1.0/24", "10.20.2.0/24"]
   public_subnets  = ["10.20.101.0/24", "10.20.102.0/24"]
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  enable_nat_gateway = var.enable_eks
+  single_nat_gateway = var.enable_eks
 
   public_subnet_tags = {
     "kubernetes.io/role/elb"                    = 1
@@ -37,32 +37,35 @@ module "vpc" {
 
 # --- IAM Role for EBS CSI Driver (IRSA) ---
 data "aws_iam_policy_document" "ebs_csi_assume_role_policy" {
+  count = var.enable_eks ? 1 : 0
+
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub"
+      variable = "${replace(try(module.eks.cluster_oidc_issuer_url, ""), "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:aud"
+      variable = "${replace(try(module.eks.cluster_oidc_issuer_url, ""), "https://", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
 
     principals {
-      identifiers = [module.eks.oidc_provider_arn]
+      identifiers = [try(module.eks.oidc_provider_arn, "")]
       type        = "Federated"
     }
   }
 }
 
 resource "aws_iam_role" "ebs_csi_driver" {
+  count              = var.enable_eks ? 1 : 0
   name_prefix        = "${var.cluster_name}-ebs-csi-"
-  assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume_role_policy[0].json
 
   tags = {
     Environment = var.environment
@@ -70,7 +73,8 @@ resource "aws_iam_role" "ebs_csi_driver" {
 }
 
 resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
-  role       = aws_iam_role.ebs_csi_driver.name
+  count      = var.enable_eks ? 1 : 0
+  role       = aws_iam_role.ebs_csi_driver[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
@@ -78,6 +82,8 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.37.1"
+
+  create = var.enable_eks
 
   cluster_name    = var.cluster_name
   cluster_version = "1.35"
@@ -97,7 +103,7 @@ module "eks" {
   cluster_addons = {
     aws-ebs-csi-driver = {
       most_recent              = true
-      service_account_role_arn = aws_iam_role.ebs_csi_driver.arn
+      service_account_role_arn = try(aws_iam_role.ebs_csi_driver[0].arn, null)
     }
     metrics-server = {
       most_recent = true
