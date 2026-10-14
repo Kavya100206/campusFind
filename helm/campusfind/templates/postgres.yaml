@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "campusfind.fullname" . }}-postgres
+type: Opaque
+stringData:
+  username: {{ .Values.postgres.username | quote }}
+  password: {{ .Values.postgres.password | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "campusfind.fullname" . }}-postgres
+spec:
+  selector:
+    app: campusfind-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "campusfind.fullname" . }}-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: campusfind-postgres
+  template:
+    metadata:
+      labels:
+        app: campusfind-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+          - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "{{ .Values.postgres.database }}"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "campusfind.fullname" . }}-postgres
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "campusfind.fullname" . }}-postgres
+              key: password
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+          - name: data
+            mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "campusfind.fullname" . }}-postgres-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "campusfind.fullname" . }}-postgres-data
+spec:
+  accessModes: [ReadWriteOnce]
+  {{- if and .Values.postgres.persistence .Values.postgres.persistence.storageClassName }}
+  storageClassName: {{ .Values.postgres.persistence.storageClassName | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ if and .Values.postgres.persistence .Values.postgres.persistence.size }}{{ .Values.postgres.persistence.size }}{{ else }}5Gi{{ end }}
