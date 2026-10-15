@@ -10,3 +10,4 @@ min_nodes          = 2
 desired_nodes      = 2
 max_nodes          = 2
 enable_eks         = true
+enable_irsa_ebs_csi = false

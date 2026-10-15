@@ -45,3 +45,9 @@ variable "enable_eks" {
   type        = bool
   default     = true
 }
+
+variable "enable_irsa_ebs_csi" {
+  description = "Controls whether IAM Roles for Service Accounts (IRSA), OIDC provider, and AWS EBS CSI driver addon are provisioned. Set to false for accounts where IAM OIDC provider creation is blocked by organization SCP."
+  type        = bool
+  default     = false
+}

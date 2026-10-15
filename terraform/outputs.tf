@@ -25,5 +25,5 @@ output "public_subnets" {
 
 output "ebs_csi_role_arn" {
   description = "IAM role ARN used by the AWS EBS CSI driver"
-  value       = var.enable_eks ? try(aws_iam_role.ebs_csi_driver[0].arn, null) : null
+  value       = var.enable_eks && var.enable_irsa_ebs_csi ? try(aws_iam_role.ebs_csi_driver[0].arn, null) : null
 }

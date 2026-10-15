@@ -37,7 +37,7 @@ module "vpc" {
 
 # --- IAM Role for EBS CSI Driver (IRSA) ---
 data "aws_iam_policy_document" "ebs_csi_assume_role_policy" {
-  count = var.enable_eks ? 1 : 0
+  count = var.enable_eks && var.enable_irsa_ebs_csi ? 1 : 0
 
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "ebs_csi_assume_role_policy" {
 }
 
 resource "aws_iam_role" "ebs_csi_driver" {
-  count              = var.enable_eks ? 1 : 0
+  count              = var.enable_eks && var.enable_irsa_ebs_csi ? 1 : 0
   name_prefix        = "${var.cluster_name}-ebs-csi-"
   assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume_role_policy[0].json
 
@@ -73,7 +73,7 @@ resource "aws_iam_role" "ebs_csi_driver" {
 }
 
 resource "aws_iam_role_policy_attachment" "ebs_csi_policy" {
-  count      = var.enable_eks ? 1 : 0
+  count      = var.enable_eks && var.enable_irsa_ebs_csi ? 1 : 0
   role       = aws_iam_role.ebs_csi_driver[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
@@ -93,6 +93,7 @@ module "eks" {
 
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
+  enable_irsa                              = var.enable_irsa_ebs_csi
 
   # Cost optimization for capstone demo: disable KMS CMK and CloudWatch log group
   create_kms_key              = false
@@ -100,15 +101,19 @@ module "eks" {
   create_cloudwatch_log_group = false
   cluster_enabled_log_types   = []
 
-  cluster_addons = {
-    aws-ebs-csi-driver = {
-      most_recent              = true
-      service_account_role_arn = try(aws_iam_role.ebs_csi_driver[0].arn, null)
-    }
-    metrics-server = {
-      most_recent = true
-    }
-  }
+  cluster_addons = merge(
+    {
+      metrics-server = {
+        most_recent = true
+      }
+    },
+    var.enable_irsa_ebs_csi ? {
+      aws-ebs-csi-driver = {
+        most_recent              = true
+        service_account_role_arn = try(aws_iam_role.ebs_csi_driver[0].arn, null)
+      }
+    } : {}
+  )
 
   eks_managed_node_groups = {
     main = {
