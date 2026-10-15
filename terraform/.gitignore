@@ -3,6 +3,6 @@
 *.tfstate.*
 *.tfvars
 !terraform.tfvars.example
-!plan-b-vpc-only.tfvars
+!plan-b-vpc-only.tfvars.example
 tfplan*
 *.tfplan
