@@ -1,6 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campusfind-backend-test
+  namespace: troubleshooting-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: campusfind-backend
+  template:
+    metadata:
+      labels:
+        app: campusfind-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/kavya100206/campusfind-backend:ce0cbedd6efc38f5b528ae12eed42518445201d9
+          ports:
+            - containerPort: 8000
+---
 apiVersion: v1
 kind: Service
-metadata: {name: broken-service, namespace: taskboard}
+metadata:
+  name: campusfind-broken-service
+  namespace: troubleshooting-lab
 spec:
-  selector: {app: label-that-does-not-exist}
-  ports: [{port: 8080, targetPort: 8080}]
+  selector:
+    app: campusfind-wrong-selector
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
