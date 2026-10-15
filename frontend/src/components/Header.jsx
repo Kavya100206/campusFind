@@ -6,7 +6,7 @@ export default function Header({ onOpenReport, reportButtonRef }) {
       <div className="header-content">
         <div className="header-titles">
           <h1 className="header-title">SST Lost & Found</h1>
-          <p className="header-tagline">Report and find lost items on campus.</p>
+          <p className="header-tagline">Report, track, and recover lost campus items in real time.</p>
         </div>
         <div className="header-actions">
           <button
