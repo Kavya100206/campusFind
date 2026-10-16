@@ -36,11 +36,12 @@ export default function ItemCard({ item, onSelectItem }) {
         <span className="item-card-reporter">Reported by: {item.reporter_name}</span>
         <button
           type="button"
-          className="btn btn-secondary btn-sm"
+          className="btn btn-ghost btn-sm"
           onClick={(e) => {
             e.stopPropagation();
             onSelectItem(item);
           }}
+          id={`btn-card-view-${item.id}`}
         >
           View
         </button>

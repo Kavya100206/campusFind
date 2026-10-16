@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import StatsStrip from './components/StatsStrip';
 import FilterBar from './components/FilterBar';
@@ -26,6 +27,9 @@ export default function App() {
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Tablet/Mobile sidebar toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Modals state
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -107,7 +111,6 @@ export default function App() {
       showToast('Item reported successfully.');
       setIsReportOpen(false);
       lastActiveElementRef.current?.focus();
-      // Refetch both list and stats
       await Promise.all([loadItems(), loadStats()]);
     } catch (err) {
       alert(err.message || 'Failed to report item.');
@@ -132,11 +135,10 @@ export default function App() {
   async function handleUpdateItem(id, payload) {
     try {
       setIsSubmitting(true);
-      const updated = await updateItem(id, payload);
+      await updateItem(id, payload);
       showToast('Record updated successfully.');
       setSelectedItem(null);
       lastActiveElementRef.current?.focus();
-      // Refetch both list and stats
       await Promise.all([loadItems(), loadStats()]);
     } catch (err) {
       alert(err.message || 'Failed to update record.');
@@ -155,7 +157,6 @@ export default function App() {
   function handleCloseDelete() {
     setItemToDelete(null);
     setDeleteError(false);
-    // If detail modal is still open, keep it or return focus
     if (!selectedItem) {
       lastActiveElementRef.current?.focus();
     }
@@ -171,7 +172,6 @@ export default function App() {
       setItemToDelete(null);
       setSelectedItem(null);
       lastActiveElementRef.current?.focus();
-      // Refetch both list and stats
       await Promise.all([loadItems(), loadStats()]);
     } catch (err) {
       setDeleteError(true);
@@ -190,50 +190,80 @@ export default function App() {
   const totalItemsCount = stats ? stats.total : items.length;
 
   return (
-    <div className="app-container">
-      <Header onOpenReport={handleOpenReport} reportButtonRef={reportBtnRef} />
+    <div className="app-layout">
+      {/* Fixed Left Sidebar (>=1024px) or Drawer on Tablet */}
+      <Sidebar
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        stats={stats}
+        isSidebarOpen={isSidebarOpen}
+        onCloseSidebar={() => setIsSidebarOpen(false)}
+      />
 
-      <main className="main-content">
-        {errorMessage && (
-          <div className="error-banner" role="alert">
-            {errorMessage}
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              style={{ marginLeft: '12px' }}
-              onClick={() => {
-                loadItems();
-                loadStats();
-              }}
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* Global Statistics Strip */}
-        <StatsStrip stats={stats} loading={loading} />
-
-        {/* Filters and Search Bar */}
-        <FilterBar
-          selectedStatus={selectedStatus}
-          onStatusChange={setSelectedStatus}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
+      {/* Main Workspace Container */}
+      <div className="app-workspace">
+        {/* Slim Top Bar: Search on left, Report button on right */}
+        <Header
+          onOpenReport={handleOpenReport}
+          reportButtonRef={reportBtnRef}
           searchTerm={searchQuery}
           onSearchChange={setSearchQuery}
+          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
         />
 
-        {/* Items Directory Table / Cards */}
-        <ItemTable
-          items={items}
-          loading={loading}
-          totalItemsCount={totalItemsCount}
-          onSelectItem={handleSelectItem}
-          onOpenReport={handleOpenReport}
-          onClearFilters={handleClearFilters}
-        />
-      </main>
+        {/* Content Body */}
+        <main className="main-content">
+          {/* Page Heading & One-liner */}
+          <div className="page-header">
+            <h1 className="page-title">Campus Find</h1>
+            <p className="page-tagline">Lost it. Found it. Back to you.</p>
+          </div>
+
+          {errorMessage && (
+            <div className="error-banner" role="alert">
+              {errorMessage}
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ marginLeft: '12px' }}
+                onClick={() => {
+                  loadItems();
+                  loadStats();
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Global Statistics Strip */}
+          <StatsStrip stats={stats} loading={loading} />
+
+          {/* Single-row Filter Bar: Mobile Pills & Category Dropdown */}
+          <FilterBar
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            stats={stats}
+          />
+
+          {/* Items Directory Table / Cards */}
+          <ItemTable
+            items={items}
+            loading={loading}
+            totalItemsCount={totalItemsCount}
+            onSelectItem={handleSelectItem}
+            onOpenReport={handleOpenReport}
+            onClearFilters={handleClearFilters}
+          />
+        </main>
+
+        {/* Slim Footer */}
+        <footer className="app-footer">
+          <span>Campus Find · {new Date().getFullYear()}</span>
+        </footer>
+      </div>
 
       {/* Modals */}
       <ItemFormModal

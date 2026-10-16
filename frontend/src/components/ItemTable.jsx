@@ -13,9 +13,9 @@ export default function ItemTable({
 }) {
   if (loading && items.length === 0) {
     return (
-      <div className="table-container" aria-busy="true" aria-label="Loading items">
+      <div className="item-list-container" aria-busy="true" aria-label="Loading items">
         <div className="skeleton-table">
-          {[1, 2, 3, 4].map((n) => (
+          {[1, 2, 3, 4, 5].map((n) => (
             <div key={n} className="skeleton-row" />
           ))}
         </div>
@@ -23,30 +23,28 @@ export default function ItemTable({
     );
   }
 
-  // Empty state (a): No items in database at all
+  // Calm empty state (a): No items in database at all
   if (totalItemsCount === 0 && items.length === 0) {
     return (
       <div className="empty-state" role="region" aria-label="No items reported">
-        <h3 className="empty-title">No items reported yet</h3>
-        <p className="empty-description">Be the first to log a lost or found item on campus.</p>
+        <p className="empty-description">No items reported yet. Be the first to report a lost or found item.</p>
         <button
           type="button"
           className="btn btn-primary"
           onClick={onOpenReport}
           id="btn-empty-report"
         >
-          + Report an Item
+          + Report an item
         </button>
       </div>
     );
   }
 
-  // Empty state (b): Search or filter returned 0 results
+  // Calm empty state (b): Search or filter returned 0 results
   if (items.length === 0) {
     return (
       <div className="empty-state" role="region" aria-label="No matches found">
-        <h3 className="empty-title">No matching items found</h3>
-        <p className="empty-description">Try clearing your filters or selecting the All tab.</p>
+        <p className="empty-description">No matching items found for your selected filters.</p>
         <button
           type="button"
           className="btn btn-secondary"
@@ -59,12 +57,12 @@ export default function ItemTable({
     );
   }
 
-  const countText = items.length === 1 ? 'Showing 1 item' : `Showing ${items.length} items`;
+  const countText = items.length === 1 ? '1 item' : `${items.length} items`;
 
   return (
     <div className="item-list-container">
       <div className="item-count-bar" aria-live="polite">
-        <span>{countText}</span>
+        <span>Showing {countText}</span>
       </div>
 
       {/* Desktop & Tablet Table */}
@@ -72,13 +70,13 @@ export default function ItemTable({
         <table className="items-table">
           <thead>
             <tr>
-              <th scope="col" style={{ width: '110px' }}>Status</th>
+              <th scope="col" style={{ width: '100px' }}>Status</th>
               <th scope="col">Item Title</th>
-              <th scope="col" style={{ width: '130px' }}>Category</th>
+              <th scope="col" style={{ width: '120px' }}>Category</th>
               <th scope="col">Campus Location</th>
               <th scope="col" className="col-reporter">Reported By</th>
-              <th scope="col" style={{ width: '100px' }}>Date</th>
-              <th scope="col" style={{ width: '90px', textAlign: 'right' }}>Actions</th>
+              <th scope="col" style={{ width: '90px' }}>Date</th>
+              <th scope="col" style={{ width: '80px', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -103,17 +101,21 @@ export default function ItemTable({
                   }}
                   aria-label={`View ${item.title}`}
                 >
-                  <td>
+                  <td className="cell-status">
                     <StatusBadge status={item.status} />
                   </td>
                   <td className="cell-title font-medium">
-                    {item.title}
+                    <span className="title-truncate" title={item.title}>
+                      {item.title}
+                    </span>
                   </td>
                   <td className="cell-category">
                     {categoryLabel}
                   </td>
                   <td className="cell-location">
-                    {item.location}
+                    <span className="location-truncate" title={item.location}>
+                      {item.location}
+                    </span>
                   </td>
                   <td className="cell-reporter col-reporter">
                     {item.reporter_name}
@@ -124,7 +126,7 @@ export default function ItemTable({
                   <td style={{ textAlign: 'right' }}>
                     <button
                       type="button"
-                      className="btn btn-secondary btn-sm"
+                      className="btn btn-ghost btn-sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectItem(item);
