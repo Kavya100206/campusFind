@@ -1,5 +1,5 @@
 :root {
-  /* Surface & Background */
+  /* Surface & Background (Single Neutral Family: Slate / Cool Greys) */
   --color-bg-app: #f8fafc;
   --color-bg-surface: #ffffff;
   --color-border: #e2e8f0;
@@ -13,28 +13,28 @@
   --color-text-secondary: #475569;
   --color-text-muted: #64748b;
   
-  /* Primary Accent: Deep Teal */
+  /* Primary Accent: Deep Teal (sparingly used: primary buttons, active nav, focus rings) */
   --color-primary: #0f766e;
   --color-primary-hover: #115e59;
   --color-primary-light: #ccfbf1;
   --color-primary-text: #ffffff;
   
-  /* Danger / Destructive Action */
+  /* Danger / Destructive Action (Single Red reserved strictly for destructive actions) */
   --color-danger: #dc2626;
   --color-danger-hover: #b91c1c;
   --color-danger-light: #fee2e2;
   
-  /* Status Badges */
-  --color-badge-lost-bg: #fef3c7;
-  --color-badge-lost-text: #92400e;
-  --color-badge-lost-border: #fde68a;
+  /* Status Badges - Muted tints of neutral / accent (no rainbow hues) */
+  --color-badge-lost-bg: #f1f5f9;
+  --color-badge-lost-text: #334155;
+  --color-badge-lost-border: #cbd5e1;
   
-  --color-badge-found-bg: #dcfce7;
-  --color-badge-found-text: #166534;
-  --color-badge-found-border: #bbf7d0;
+  --color-badge-found-bg: #f0fdfa;
+  --color-badge-found-text: #0f766e;
+  --color-badge-found-border: #ccfbf1;
   
-  --color-badge-claimed-bg: #f1f5f9;
-  --color-badge-claimed-text: #334155;
+  --color-badge-claimed-bg: #f8fafc;
+  --color-badge-claimed-text: #64748b;
   --color-badge-claimed-border: #e2e8f0;
   
   /* Typography */
@@ -58,16 +58,17 @@
   --space-xl: 32px;
   --space-2xl: 48px;
   
-  /* Radii */
-  --radius-sm: 4px;
+  /* Unified Radius: One consistent radius across all cards, inputs, and components */
+  --radius: 6px;
+  --radius-sm: 6px;
   --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-lg: 6px;
   --radius-full: 9999px;
   
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  /* Shadows: Subtle shadows ONLY on overlays (dialogs/menus/toasts), none on static surfaces */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
 }
 
 /* Reduced motion preference */
