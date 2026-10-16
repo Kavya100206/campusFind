@@ -50,7 +50,7 @@ export default function ItemTable({
         <p className="empty-description">No matching items found for your selected filters.</p>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-ghost"
           onClick={onClearFilters}
           id="btn-clear-filters"
         >
@@ -99,17 +99,24 @@ export default function ItemTable({
       {/* Desktop Table View */}
       <div className="table-wrapper">
         <table className="items-table">
+          <colgroup>
+            <col className="col-status" style={{ width: '110px' }} />
+            <col className="col-title" style={{ minWidth: '220px' }} />
+            <col className="col-category" style={{ width: '110px' }} />
+            <col className="col-location" style={{ width: '20%' }} />
+            <col className="col-reporter" style={{ width: '160px' }} />
+            <col className="col-date" style={{ width: '90px' }} />
+            <col className="col-actions" style={{ width: '72px' }} />
+          </colgroup>
           <thead>
             <tr>
-              <th scope="col" style={{ width: '100px' }}>Status</th>
-              <th scope="col">Title</th>
-              <th scope="col" style={{ width: '120px' }}>Category</th>
-              <th scope="col">Location</th>
-              <th scope="col" className="col-reporter-header" style={{ width: '160px', whiteSpace: 'nowrap' }}>
-                Reported by
-              </th>
-              <th scope="col" style={{ width: '90px' }}>Date</th>
-              <th scope="col" style={{ width: '70px', textAlign: 'right' }}>Actions</th>
+              <th scope="col" className="col-status">Status</th>
+              <th scope="col" className="col-title">Title</th>
+              <th scope="col" className="col-category">Category</th>
+              <th scope="col" className="col-location">Location</th>
+              <th scope="col" className="col-reporter">Reported by</th>
+              <th scope="col" className="col-date">Date</th>
+              <th scope="col" className="col-actions" style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -135,23 +142,23 @@ export default function ItemTable({
                   }}
                   aria-label={`View ${item.title}`}
                 >
-                  <td className="cell-status">
+                  <td className="cell-status col-status">
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className="cell-title">
+                  <td className="cell-title col-title">
                     <span className="title-truncate" title={item.title}>
                       {item.title}
                     </span>
                   </td>
-                  <td className="cell-category">
+                  <td className="cell-category col-category">
                     {categoryLabel}
                   </td>
-                  <td className="cell-location">
+                  <td className="cell-location col-location">
                     <span className="location-truncate" title={item.location}>
                       {item.location}
                     </span>
                   </td>
-                  <td className="cell-reporter">
+                  <td className="cell-reporter col-reporter">
                     <div className="reporter-cell">
                       <span className="user-avatar" aria-hidden="true">
                         {getInitials(item.reporter_name)}
@@ -161,10 +168,10 @@ export default function ItemTable({
                       </span>
                     </div>
                   </td>
-                  <td className="cell-date">
+                  <td className="cell-date col-date">
                     <span title={fullDate}>{relativeDate}</span>
                   </td>
-                  <td style={{ textAlign: 'right' }}>
+                  <td className="cell-actions col-actions" style={{ textAlign: 'right' }}>
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm"
@@ -184,14 +191,14 @@ export default function ItemTable({
         </table>
       </div>
 
-      {/* Mobile Card List */}
+      {/* Mobile Card List (< 640px) */}
       <div className="card-list-wrapper">
         {visibleItems.map((item) => (
           <ItemCard key={item.id} item={item} onSelectItem={onSelectItem} />
         ))}
       </div>
 
-      {/* Pagination Footer */}
+      {/* Fully Visible Pagination Footer */}
       <div className="table-pagination">
         <span className="pagination-text">
           {displayStart}–{displayEnd} of {items.length}

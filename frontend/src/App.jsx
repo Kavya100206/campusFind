@@ -4,7 +4,6 @@ import Header from './components/Header';
 import StatsStrip from './components/StatsStrip';
 import FilterBar from './components/FilterBar';
 import ItemTable from './components/ItemTable';
-import RecentActivity from './components/RecentActivity';
 import ItemFormModal from './components/ItemFormModal';
 import ItemDetailModal from './components/ItemDetailModal';
 import {
@@ -170,7 +169,7 @@ export default function App() {
 
   const totalItemsCount = stats ? stats.total : items.length;
 
-  // Section title mapping
+  // Page title follows active sidebar filter
   const sectionTitles = {
     ALL: 'All items',
     LOST: 'Lost items',
@@ -181,7 +180,7 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* 232px Sidebar */}
+      {/* 232px Sidebar as single status filter */}
       <Sidebar
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
@@ -192,9 +191,8 @@ export default function App() {
 
       {/* Main Workspace */}
       <div className="app-workspace">
-        {/* 56px Top Bar */}
+        {/* 56px Top Bar: Search on left with / hint, Report item on right */}
         <Header
-          selectedStatus={selectedStatus}
           onOpenReport={handleOpenReport}
           reportButtonRef={reportBtnRef}
           searchTerm={searchQuery}
@@ -204,7 +202,7 @@ export default function App() {
 
         {/* Content Area */}
         <main className="main-content">
-          {/* Section Header: Section name, not app name */}
+          {/* Section Header */}
           <div className="section-header">
             <h1 className="section-title">{currentSectionTitle}</h1>
             <p className="section-tagline">Lost it. Found it. Back to you.</p>
@@ -230,30 +228,25 @@ export default function App() {
           {/* Stat Cards Strip */}
           <StatsStrip stats={stats} loading={loading} />
 
-          {/* Unified Toolbar Above Table: Segmented control + Category select + Chips */}
+          {/* Toolbar: Result Count on left, Category select on right, chips when active */}
           <FilterBar
             selectedStatus={selectedStatus}
             onStatusChange={setSelectedStatus}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            stats={stats}
+            itemsCount={items.length}
           />
 
-          {/* Dashboard Main Grid: Table & Recent Activity */}
-          <div className="dashboard-content-grid">
-            <div className="grid-main-table">
-              <ItemTable
-                items={items}
-                loading={loading}
-                totalItemsCount={totalItemsCount}
-                onSelectItem={handleSelectItem}
-                onOpenReport={handleOpenReport}
-                onClearFilters={handleClearFilters}
-              />
-            </div>
-            <aside className="grid-side-activity">
-              <RecentActivity items={items} onSelectItem={handleSelectItem} />
-            </aside>
+          {/* Full-width Items Directory Table */}
+          <div className="table-container-full">
+            <ItemTable
+              items={items}
+              loading={loading}
+              totalItemsCount={totalItemsCount}
+              onSelectItem={handleSelectItem}
+              onOpenReport={handleOpenReport}
+              onClearFilters={handleClearFilters}
+            />
           </div>
         </main>
       </div>

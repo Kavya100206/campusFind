@@ -6,51 +6,34 @@ export default function FilterBar({
   onStatusChange,
   selectedCategory,
   onCategoryChange,
-  stats,
+  itemsCount = 0,
 }) {
-  const statusTabs = [
-    { id: 'ALL', label: 'All', count: stats ? stats.total : 0 },
-    { id: 'LOST', label: 'Lost', count: stats ? stats.lost : 0 },
-    { id: 'FOUND', label: 'Found', count: stats ? stats.found : 0 },
-    { id: 'CLAIMED', label: 'Claimed', count: stats ? stats.claimed : 0 },
-  ];
-
   const hasActiveFilters = selectedStatus !== 'ALL' || selectedCategory !== '';
+  const countLabel = itemsCount === 1 ? '1 item' : `${itemsCount} items`;
 
   function handleClearAll() {
     onStatusChange('ALL');
     onCategoryChange('');
   }
 
+  const statusLabels = {
+    LOST: 'Lost',
+    FOUND: 'Found',
+    CLAIMED: 'Claimed',
+  };
+
   return (
     <div className="table-toolbar" role="search" aria-label="Item filters">
-      {/* Primary Toolbar Row */}
+      {/* Primary Toolbar Row: Left = Result count, Right = Category select */}
       <div className="toolbar-controls-row">
-        {/* Segmented Control */}
-        <div className="segmented-control" role="tablist" aria-label="Filter items by status">
-          {statusTabs.map((tab) => {
-            const isActive = selectedStatus === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                className={`segmented-btn ${isActive ? 'segmented-btn--active' : ''}`}
-                onClick={() => onStatusChange(tab.id)}
-                id={`tab-status-${tab.id.toLowerCase()}`}
-              >
-                <span>{tab.label}</span>
-                <span className="segmented-count">{tab.count}</span>
-              </button>
-            );
-          })}
+        <div className="toolbar-result-count" aria-live="polite">
+          <span className="result-count-text">{countLabel}</span>
         </div>
 
-        {/* Category Select with Proper Label Spacing */}
+        {/* Category Select with 8px Gap */}
         <div className="toolbar-category-select">
           <label htmlFor="filter-cat-select" className="category-label">
-            Category
+            Category:
           </label>
           <div className="select-wrapper">
             <select
@@ -70,18 +53,18 @@ export default function FilterBar({
         </div>
       </div>
 
-      {/* Active Filter Chips */}
+      {/* Removable Active Filter Chips + Clear All */}
       {hasActiveFilters && (
         <div className="active-filters-row" aria-label="Active filters">
           <span className="active-filters-label">Filters:</span>
           {selectedStatus !== 'ALL' && (
             <span className="filter-chip">
-              Status: <strong>{selectedStatus.toLowerCase()}</strong>
+              Status: <strong>{statusLabels[selectedStatus] || selectedStatus}</strong>
               <button
                 type="button"
                 className="chip-remove-btn"
                 onClick={() => onStatusChange('ALL')}
-                aria-label={`Remove status filter`}
+                aria-label="Remove status filter"
               >
                 &times;
               </button>

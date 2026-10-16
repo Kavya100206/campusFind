@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function Header({
-  selectedStatus,
   onOpenReport,
   reportButtonRef,
   searchTerm,
@@ -39,15 +38,6 @@ export default function Header({
     setLocalSearch(searchTerm || '');
   }, [searchTerm]);
 
-  const statusBreadcrumbs = {
-    ALL: 'All items',
-    LOST: 'Lost',
-    FOUND: 'Found',
-    CLAIMED: 'Claimed',
-  };
-
-  const currentSection = statusBreadcrumbs[selectedStatus] || 'All items';
-
   return (
     <header className="app-topbar">
       <div className="topbar-left">
@@ -66,7 +56,7 @@ export default function Header({
           </svg>
         </button>
 
-        {/* Mobile logo icon */}
+        {/* Mobile logo mark */}
         <div className="topbar-mobile-brand" aria-label="Campus Find">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="4" />
@@ -75,15 +65,7 @@ export default function Header({
           <span className="topbar-brand-text">Campus Find</span>
         </div>
 
-        {/* Desktop Breadcrumb */}
-        <nav className="topbar-breadcrumb" aria-label="Breadcrumb">
-          <span className="breadcrumb-root">Items</span>
-          <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-current">{currentSection}</span>
-        </nav>
-      </div>
-
-      <div className="topbar-center">
+        {/* Search input with / shortcut hint */}
         <div className="topbar-search-box">
           <svg className="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />

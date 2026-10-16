@@ -12,10 +12,10 @@ export default function StatsStrip({ stats, loading }) {
   }
 
   const cards = [
-    { label: 'Total', value: total, subtext: total > 0 ? '100% recorded' : '—', key: 'total' },
-    { label: 'Lost', value: lost, subtext: total > 0 ? `${calcPct(lost)} of total` : '—', key: 'lost' },
-    { label: 'Found', value: found, subtext: total > 0 ? `${calcPct(found)} of total` : '—', key: 'found' },
-    { label: 'Claimed', value: claimed, subtext: total > 0 ? `${calcPct(claimed)} of total` : '—', key: 'claimed' },
+    { label: 'Total', value: total, subtext: null, key: 'total' },
+    { label: 'Lost', value: lost, subtext: total > 0 ? `${calcPct(lost)} of total` : null, key: 'lost' },
+    { label: 'Found', value: found, subtext: total > 0 ? `${calcPct(found)} of total` : null, key: 'found' },
+    { label: 'Claimed', value: claimed, subtext: total > 0 ? `${calcPct(claimed)} of total` : null, key: 'claimed' },
   ];
 
   return (
@@ -28,7 +28,9 @@ export default function StatsStrip({ stats, loading }) {
               <span className="stat-value">
                 {loading && !stats ? '—' : card.value}
               </span>
-              <span className="stat-pct">{card.subtext}</span>
+              {card.subtext && (
+                <span className="stat-pct">{card.subtext}</span>
+              )}
             </div>
           </div>
         ))}
