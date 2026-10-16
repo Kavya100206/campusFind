@@ -35,6 +35,7 @@ tfplan*
 .DS_Store
 .idea/
 .vscode/
+~$*
 
 # --- markdown: only README.md is committed ---
 *.md
