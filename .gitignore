@@ -45,6 +45,7 @@ tfplan*
 scratch/
 tmp/
 evidence/
+screenshots/
 *.log
 test_scratch_*.py
 *.zip
