@@ -128,10 +128,12 @@ export default function ItemTable({
                 timeStyle: 'short',
               });
 
+              const statusKey = (item.status || 'lost').toLowerCase();
+
               return (
                 <tr
                   key={item.id}
-                  className="table-row"
+                  className={`table-row table-row--${statusKey}`}
                   onClick={() => onSelectItem(item)}
                   tabIndex={0}
                   onKeyDown={(e) => {

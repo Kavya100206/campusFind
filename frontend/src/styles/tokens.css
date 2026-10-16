@@ -28,13 +28,21 @@
   --color-danger-hover: #991b1b;
   --color-danger-light: #fef3f2;
 
-  /* Status Pill Tokens (Quiet neutral pill with 6px dot) */
-  --color-badge-bg: #f2eee6;
-  --color-badge-text: #44403c;
-  --color-badge-border: #e7e1d6;
-  --color-dot-lost: #b4532a;     /* Terracotta */
-  --color-dot-found: #5f7a4f;    /* Olive */
-  --color-dot-claimed: #a8a29e;  /* Stone */
+  /* Status Pill Tokens */
+  --status-lost-bg: rgba(180, 83, 42, 0.10);
+  --status-lost-fg: #8F3F1E;
+  --status-found-bg: rgba(95, 122, 79, 0.12);
+  --status-found-fg: #46603A;
+  --status-claimed-bg: #ECE8E1;
+  --status-claimed-fg: #57534E;
+
+  /* Row Tint Wash Tokens */
+  --row-lost-bg: rgba(180, 83, 42, 0.04);
+  --row-lost-hover: rgba(180, 83, 42, 0.08);
+  --row-found-bg: rgba(95, 122, 79, 0.04);
+  --row-found-hover: rgba(95, 122, 79, 0.08);
+  --row-claimed-bg: transparent;
+  --row-claimed-hover: rgba(87, 83, 78, 0.08);
 
   /* Type Scale */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

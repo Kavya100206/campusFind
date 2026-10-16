@@ -8,10 +8,11 @@ export default function ItemCard({ item, onSelectItem }) {
     month: 'short',
     day: 'numeric',
   });
+  const statusKey = (item.status || 'lost').toLowerCase();
 
   return (
     <article
-      className="item-card"
+      className={`item-card item-card--${statusKey}`}
       onClick={() => onSelectItem(item)}
       role="button"
       tabIndex={0}

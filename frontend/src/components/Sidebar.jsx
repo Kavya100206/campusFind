@@ -111,7 +111,9 @@ export default function Sidebar({
         </nav>
 
         <div className="sidebar-footer">
-          <span className="sidebar-footer-text">Campus Find · 2026</span>
+          <p className="sidebar-footer-text">
+            Lost something? Someone's probably holding it.
+          </p>
         </div>
       </aside>
     </>

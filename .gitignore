@@ -41,11 +41,9 @@ tfplan*
 **/*.md
 !/README.md
 
-# --- agent / scratch / evidence (local only) ---
+# --- agent / scratch (local only) ---
 scratch/
 tmp/
-evidence/
-screenshots/
 *.log
 test_scratch_*.py
 *.zip

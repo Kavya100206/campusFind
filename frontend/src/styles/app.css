@@ -179,14 +179,20 @@ button, input, select, textarea {
 }
 
 .sidebar-footer {
-  padding: 14px var(--space-md);
+  padding: var(--space-md);
   border-top: 1px solid var(--color-border);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
 }
 
 .sidebar-footer-text {
-  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-base); /* 13px, a bit larger than 12px */
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -697,8 +703,28 @@ button, input, select, textarea {
   transition: background-color 0.12s ease;
 }
 
-.table-row:hover {
-  background-color: #f7f4ee; /* Row hover: bg #F7F4EE */
+.table-row--lost {
+  background-color: var(--row-lost-bg);
+}
+
+.table-row--lost:hover {
+  background-color: var(--row-lost-hover);
+}
+
+.table-row--found {
+  background-color: var(--row-found-bg);
+}
+
+.table-row--found:hover {
+  background-color: var(--row-found-hover);
+}
+
+.table-row--claimed {
+  background-color: var(--row-claimed-bg);
+}
+
+.table-row--claimed:hover {
+  background-color: var(--row-claimed-hover);
 }
 
 .table-row:last-child td {
@@ -780,39 +806,35 @@ button, input, select, textarea {
 }
 
 /* ============================================================
-   Status Pills (6px Dot + Quiet Text, Nothing Filled)
+   Status Pills (Soft Tinted Background + Darker Text, No Dot)
    ============================================================ */
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background-color: var(--color-badge-bg);
-  border: 1px solid var(--color-badge-border);
-  border-radius: var(--radius-full);
-  padding: 2px 8px;
-  font-size: 11px;
+  justify-content: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: none;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--color-badge-text);
-  line-height: 1.25;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.status-pill--lost {
+  background-color: var(--status-lost-bg);
+  color: var(--status-lost-fg);
 }
 
-.status-dot--lost {
-  background-color: var(--color-dot-lost); /* Terracotta #B4532A */
+.status-pill--found {
+  background-color: var(--status-found-bg);
+  color: var(--status-found-fg);
 }
 
-.status-dot--found {
-  background-color: var(--color-dot-found); /* Olive #5F7A4F */
-}
-
-.status-dot--claimed {
-  background-color: var(--color-dot-claimed); /* Stone #A8A29E */
+.status-pill--claimed {
+  background-color: var(--status-claimed-bg);
+  color: var(--status-claimed-fg);
 }
 
 /* ============================================================
@@ -1099,15 +1121,37 @@ button, input, select, textarea {
 }
 
 .item-card {
-  background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: var(--space-sm);
   cursor: pointer;
-  transition: border-color 0.12s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
-.item-card:hover {
+.item-card--lost {
+  background-color: var(--row-lost-bg);
+}
+
+.item-card--lost:hover {
+  background-color: var(--row-lost-hover);
+  border-color: #d1c9be;
+}
+
+.item-card--found {
+  background-color: var(--row-found-bg);
+}
+
+.item-card--found:hover {
+  background-color: var(--row-found-hover);
+  border-color: #d1c9be;
+}
+
+.item-card--claimed {
+  background-color: var(--row-claimed-bg);
+}
+
+.item-card--claimed:hover {
+  background-color: var(--row-claimed-hover);
   border-color: #d1c9be;
 }
 
