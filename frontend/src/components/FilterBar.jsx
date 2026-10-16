@@ -15,58 +15,100 @@ export default function FilterBar({
     { id: 'CLAIMED', label: 'Claimed', count: stats ? stats.claimed : 0 },
   ];
 
+  const hasActiveFilters = selectedStatus !== 'ALL' || selectedCategory !== '';
+
+  function handleClearAll() {
+    onStatusChange('ALL');
+    onCategoryChange('');
+  }
+
   return (
-    <div className="filter-bar" role="search" aria-label="Item filters">
-      {/* Horizontally scrollable pill row for status filters on mobile & tablet */}
-      <div className="mobile-pill-row" role="tablist" aria-label="Status filters">
-        {statusTabs.map((tab) => {
-          const isActive = selectedStatus === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              className={`pill-btn ${isActive ? 'pill-btn--active' : ''}`}
-              onClick={() => onStatusChange(tab.id)}
-              id={`tab-status-${tab.id.toLowerCase()}`}
+    <div className="table-toolbar" role="search" aria-label="Item filters">
+      {/* Primary Toolbar Row */}
+      <div className="toolbar-controls-row">
+        {/* Segmented Control */}
+        <div className="segmented-control" role="tablist" aria-label="Filter items by status">
+          {statusTabs.map((tab) => {
+            const isActive = selectedStatus === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                className={`segmented-btn ${isActive ? 'segmented-btn--active' : ''}`}
+                onClick={() => onStatusChange(tab.id)}
+                id={`tab-status-${tab.id.toLowerCase()}`}
+              >
+                <span>{tab.label}</span>
+                <span className="segmented-count">{tab.count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Category Select with Proper Label Spacing */}
+        <div className="toolbar-category-select">
+          <label htmlFor="filter-cat-select" className="category-label">
+            Category
+          </label>
+          <div className="select-wrapper">
+            <select
+              id="filter-cat-select"
+              className="toolbar-select"
+              value={selectedCategory}
+              onChange={(e) => onCategoryChange(e.target.value)}
             >
-              <span>{tab.label}</span>
-              <span className="pill-count">{tab.count}</span>
-            </button>
-          );
-        })}
+              <option value="">All categories</option>
+              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Compact category filter without card wrapper */}
-      <div className="category-filter-group">
-        <label htmlFor="filter-category-select" className="filter-label">
-          Category:
-        </label>
-        <select
-          id="filter-category-select"
-          className="select-category"
-          value={selectedCategory}
-          onChange={(e) => onCategoryChange(e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-        {selectedCategory && (
+      {/* Active Filter Chips */}
+      {hasActiveFilters && (
+        <div className="active-filters-row" aria-label="Active filters">
+          <span className="active-filters-label">Filters:</span>
+          {selectedStatus !== 'ALL' && (
+            <span className="filter-chip">
+              Status: <strong>{selectedStatus.toLowerCase()}</strong>
+              <button
+                type="button"
+                className="chip-remove-btn"
+                onClick={() => onStatusChange('ALL')}
+                aria-label={`Remove status filter`}
+              >
+                &times;
+              </button>
+            </span>
+          )}
+          {selectedCategory && (
+            <span className="filter-chip">
+              Category: <strong>{CATEGORY_LABELS[selectedCategory] || selectedCategory}</strong>
+              <button
+                type="button"
+                className="chip-remove-btn"
+                onClick={() => onCategoryChange('')}
+                aria-label="Remove category filter"
+              >
+                &times;
+              </button>
+            </span>
+          )}
           <button
             type="button"
-            className="btn-clear-category"
-            onClick={() => onCategoryChange('')}
-            aria-label="Clear category filter"
+            className="btn-clear-all"
+            onClick={handleClearAll}
           >
-            Clear
+            Clear all
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

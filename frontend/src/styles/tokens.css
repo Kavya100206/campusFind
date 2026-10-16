@@ -1,59 +1,53 @@
 :root {
-  /* Surface & Background (Neutrals: Slate Family) */
-  --color-bg-app: #f8fafc;
-  --color-bg-surface: #ffffff;
-  --color-bg-muted: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
-  
-  --color-input-bg: #ffffff;
-  --color-input-border: #cbd5e1;
-  --color-input-border-focus: #4f46e5;
-  
-  /* Text */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748b;
-  
-  /* Primary Accent: Indigo */
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
-  --color-primary-light: #eef2ff;
+  /* Warm Beige Palette (Linear / Notion / Vercel style) */
+  --color-bg-app: #f7f4ee;
+  --color-bg-surface: #fffdfa;
+  --color-bg-sidebar: #f2eee6;
+  --color-bg-muted: #ebe6dc;
+  --color-border: #e7e1d6;
+  --color-border-subtle: #efece5;
+
+  /* Typography Colors */
+  --color-text-primary: #1f1b16;
+  --color-text-secondary: #44403c;
+  --color-text-muted: #7a7266;
+
+  /* Primary Accent: Warm Charcoal */
+  --color-primary: #292524;
+  --color-primary-hover: #44403c;
+  --color-primary-light: #efece6;
   --color-primary-text: #ffffff;
-  
-  /* Destructive Action (Single Red) */
-  --color-danger: #dc2626;
-  --color-danger-hover: #b91c1c;
-  --color-danger-light: #fee2e2;
-  
-  /* Status Badges */
-  /* Lost = indigo tint bg + indigo text */
-  --color-badge-lost-bg: #eef2ff;
-  --color-badge-lost-text: #4f46e5;
-  --color-badge-lost-border: #e0e7ff;
-  
-  /* Found = slate-900 bg + white text */
-  --color-badge-found-bg: #0f172a;
-  --color-badge-found-text: #ffffff;
-  --color-badge-found-border: #0f172a;
-  
-  /* Claimed = slate-100 bg + slate-600 text */
-  --color-badge-claimed-bg: #f1f5f9;
-  --color-badge-claimed-text: #475569;
-  --color-badge-claimed-border: #e2e8f0;
-  
-  /* Typography Scale */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+
+  /* Input Elements */
+  --color-input-bg: #fffdfa;
+  --color-input-border: #e7e1d6;
+  --color-input-border-focus: #292524;
+
+  /* Destructive Action (Reserved single red) */
+  --color-danger: #b42318;
+  --color-danger-hover: #991b1b;
+  --color-danger-light: #fef3f2;
+
+  /* Status Pill Tokens (Quiet neutral pill with 6px dot) */
+  --color-badge-bg: #f2eee6;
+  --color-badge-text: #44403c;
+  --color-badge-border: #e7e1d6;
+  --color-dot-lost: #b4532a;     /* Terracotta */
+  --color-dot-found: #5f7a4f;    /* Olive */
+  --color-dot-claimed: #a8a29e;  /* Stone */
+
+  /* Type Scale */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  
-  --font-size-xs: 12px;
-  --font-size-sm: 13px;
-  --font-size-base: 14px;
-  --font-size-md: 15px;
+
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 13px;
+  --font-size-md: 14px;
   --font-size-lg: 16px;
   --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  
+  --font-size-2xl: 22px;
+
   /* 4px Spacing Scale */
   --space-2xs: 4px;
   --space-xs: 8px;
@@ -62,18 +56,18 @@
   --space-lg: 20px;
   --space-xl: 24px;
   --space-2xl: 32px;
-  
-  /* Unified 8px Radius */
+
+  /* 8px Radius */
   --radius: 8px;
   --radius-sm: 8px;
   --radius-md: 8px;
   --radius-lg: 8px;
   --radius-full: 9999px;
-  
-  /* Subtle Shadows Only on Overlays */
+
+  /* Subtle Shadows Only on Overlays (Drawers, Dialogs, Menus) */
   --shadow-sm: none;
   --shadow-md: none;
-  --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 32px -4px rgba(31, 27, 22, 0.12), 0 4px 12px -2px rgba(31, 27, 22, 0.06);
 }
 
 /* Reduced motion preference */

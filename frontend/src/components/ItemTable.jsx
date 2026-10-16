@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import StatusBadge from './StatusBadge';
 import ItemCard from './ItemCard';
 import { CATEGORY_LABELS } from '../api/client';
@@ -11,9 +11,12 @@ export default function ItemTable({
   onOpenReport,
   onClearFilters,
 }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+
   if (loading && items.length === 0) {
     return (
-      <div className="item-list-container" aria-busy="true" aria-label="Loading items">
+      <div className="item-table-card" aria-busy="true" aria-label="Loading items">
         <div className="skeleton-table">
           {[1, 2, 3, 4, 5].map((n) => (
             <div key={n} className="skeleton-row" />
@@ -27,14 +30,14 @@ export default function ItemTable({
   if (totalItemsCount === 0 && items.length === 0) {
     return (
       <div className="empty-state" role="region" aria-label="No items reported">
-        <p className="empty-description">No items reported yet. Be the first to report a lost or found item.</p>
+        <p className="empty-description">No items reported yet.</p>
         <button
           type="button"
           className="btn btn-primary"
           onClick={onOpenReport}
           id="btn-empty-report"
         >
-          + Report an item
+          Report an item
         </button>
       </div>
     );
@@ -57,34 +60,65 @@ export default function ItemTable({
     );
   }
 
-  const countText = items.length === 1 ? '1 item' : `${items.length} items`;
+  // Pagination calculation
+  const totalPages = Math.ceil(items.length / PAGE_SIZE) || 1;
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * PAGE_SIZE;
+  const visibleItems = items.slice(startIndex, startIndex + PAGE_SIZE);
+  const displayStart = items.length === 0 ? 0 : startIndex + 1;
+  const displayEnd = Math.min(startIndex + PAGE_SIZE, items.length);
+
+  function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function formatRelativeDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 30) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    if (diffDays > 0) return `${diffDays}d ago`;
+    if (diffHours > 0) return `${diffHours}h ago`;
+    if (diffMins > 0) return `${diffMins}m ago`;
+    return 'just now';
+  }
 
   return (
-    <div className="item-list-container">
-      <div className="item-count-bar" aria-live="polite">
-        <span>Showing {countText}</span>
-      </div>
-
-      {/* Desktop & Tablet Table */}
+    <div className="item-table-card">
+      {/* Desktop Table View */}
       <div className="table-wrapper">
         <table className="items-table">
           <thead>
             <tr>
               <th scope="col" style={{ width: '100px' }}>Status</th>
-              <th scope="col">Item Title</th>
+              <th scope="col">Title</th>
               <th scope="col" style={{ width: '120px' }}>Category</th>
-              <th scope="col">Campus Location</th>
-              <th scope="col" className="col-reporter">Reported By</th>
+              <th scope="col">Location</th>
+              <th scope="col" className="col-reporter-header" style={{ width: '160px', whiteSpace: 'nowrap' }}>
+                Reported by
+              </th>
               <th scope="col" style={{ width: '90px' }}>Date</th>
-              <th scope="col" style={{ width: '80px', textAlign: 'right' }}>Actions</th>
+              <th scope="col" style={{ width: '70px', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => {
+            {visibleItems.map((item) => {
               const categoryLabel = CATEGORY_LABELS[item.category] || item.category;
-              const formattedDate = new Date(item.created_at).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
+              const relativeDate = formatRelativeDate(item.created_at);
+              const fullDate = new Date(item.created_at).toLocaleString('en-US', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
               });
 
               return (
@@ -104,7 +138,7 @@ export default function ItemTable({
                   <td className="cell-status">
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className="cell-title font-medium">
+                  <td className="cell-title">
                     <span className="title-truncate" title={item.title}>
                       {item.title}
                     </span>
@@ -117,11 +151,18 @@ export default function ItemTable({
                       {item.location}
                     </span>
                   </td>
-                  <td className="cell-reporter col-reporter">
-                    {item.reporter_name}
+                  <td className="cell-reporter">
+                    <div className="reporter-cell">
+                      <span className="user-avatar" aria-hidden="true">
+                        {getInitials(item.reporter_name)}
+                      </span>
+                      <span className="reporter-name" title={item.reporter_name}>
+                        {item.reporter_name}
+                      </span>
+                    </div>
                   </td>
                   <td className="cell-date">
-                    {formattedDate}
+                    <span title={fullDate}>{relativeDate}</span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <button
@@ -145,9 +186,36 @@ export default function ItemTable({
 
       {/* Mobile Card List */}
       <div className="card-list-wrapper">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <ItemCard key={item.id} item={item} onSelectItem={onSelectItem} />
         ))}
+      </div>
+
+      {/* Pagination Footer */}
+      <div className="table-pagination">
+        <span className="pagination-text">
+          {displayStart}–{displayEnd} of {items.length}
+        </span>
+        <div className="pagination-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            disabled={safePage <= 1}
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            aria-label="Previous page"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            disabled={safePage >= totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            aria-label="Next page"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

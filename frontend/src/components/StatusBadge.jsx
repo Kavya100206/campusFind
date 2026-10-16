@@ -6,8 +6,9 @@ export default function StatusBadge({ status }) {
   const label = STATUS_LABELS[normalized] || normalized;
 
   return (
-    <span className={`status-badge status-badge--${normalized.toLowerCase()}`}>
-      {label}
+    <span className={`status-pill status-pill--${normalized.toLowerCase()}`}>
+      <span className={`status-dot status-dot--${normalized.toLowerCase()}`} aria-hidden="true" />
+      <span className="status-label">{label}</span>
     </span>
   );
 }

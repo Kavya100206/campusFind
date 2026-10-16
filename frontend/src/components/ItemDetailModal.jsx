@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import StatusBadge from './StatusBadge';
-import { CATEGORY_LABELS, STATUS_LABELS } from '../api/client';
+import { CATEGORY_LABELS } from '../api/client';
 
 export default function ItemDetailModal({
   item,
   isOpen,
   onClose,
   onUpdate,
-  onOpenDelete,
+  onDelete,
   isSubmitting,
 }) {
   const [formData, setFormData] = useState({
@@ -19,7 +19,10 @@ export default function ItemDetailModal({
   });
 
   const [errors, setErrors] = useState({});
+  const [isDirty, setIsDirty] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const modalRef = useRef(null);
+  const firstInputRef = useRef(null);
 
   useEffect(() => {
     if (item && isOpen) {
@@ -31,13 +34,39 @@ export default function ItemDetailModal({
         description: item.description || '',
       });
       setErrors({});
+      setIsDirty(false);
+      setIsConfirmingDelete(false);
+      setTimeout(() => firstInputRef.current?.focus(), 50);
     }
   }, [item, isOpen]);
 
+  // Focus trap and Esc key
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.key === 'Escape' && isOpen) {
+      if (!isOpen) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        if (!modalRef.current) return;
+        const focusable = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown);
@@ -46,19 +75,20 @@ export default function ItemDetailModal({
 
   if (!isOpen || !item) return null;
 
-  const isClaimed = item.status === 'CLAIMED';
-  const categoryLabel = CATEGORY_LABELS[item.category] || item.category;
+  function handleBackdropClick() {
+    // Backdrop click closes only if form is untouched
+    if (!isDirty && !isConfirmingDelete) {
+      onClose();
+    }
+  }
 
-  const createdDate = new Date(item.created_at).toLocaleString('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
-  const updatedDate = item.updated_at
-    ? new Date(item.updated_at).toLocaleString('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      })
-    : null;
+  function handleChange(field, value) {
+    setIsDirty(true);
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
+    }
+  }
 
   function validate() {
     const errs = {};
@@ -72,14 +102,24 @@ export default function ItemDetailModal({
     return Object.keys(errs).length === 0;
   }
 
-  function handleSave(e) {
+  function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
     onUpdate(item.id, formData);
   }
 
+  // Format meta date: "Oct 15, 2026, 3:46 PM"
+  const formattedFullDate = new Date(item.created_at).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
   return (
-    <div className="modal-backdrop" onClick={onClose} role="presentation">
+    <div className="modal-backdrop" onClick={handleBackdropClick} role="presentation">
       <div
         ref={modalRef}
         className="modal-card"
@@ -88,102 +128,65 @@ export default function ItemDetailModal({
         aria-modal="true"
         aria-labelledby="modal-detail-title"
       >
+        {/* Header */}
         <div className="modal-header">
-          <div className="detail-header-info">
-            <StatusBadge status={item.status} />
-            <span className="detail-header-id">#{item.id}</span>
+          <div className="modal-header-left">
+            <h2 id="modal-detail-title" className="modal-title">
+              Edit item
+            </h2>
+            <span className="modal-item-id">#{item.id}</span>
+            <StatusBadge status={formData.status} />
           </div>
           <button
             type="button"
             className="modal-close-btn"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label="Close"
           >
-            &times;
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
-        {isClaimed ? (
-          /* Read-only view for CLAIMED items */
+        {/* Body Form */}
+        <form onSubmit={handleSubmit} noValidate>
           <div className="modal-body">
-            <h2 id="modal-detail-title" className="detail-view-title">
-              {item.title}
-            </h2>
-
-            <div className="claimed-notice" role="note">
-              This item has been returned and claimed. The record is preserved for history.
+            {/* Title */}
+            <div className="form-group">
+              <label htmlFor="edit-title" className="form-label">
+                Item title <span className="required-star" aria-hidden="true">*</span>
+              </label>
+              <input
+                ref={firstInputRef}
+                id="edit-title"
+                type="text"
+                className={`form-input ${errors.title ? 'form-input--error' : ''}`}
+                value={formData.title}
+                onChange={(e) => handleChange('title', e.target.value)}
+                aria-describedby={errors.title ? 'edit-title-error' : undefined}
+                required
+              />
+              {errors.title && (
+                <p id="edit-title-error" className="field-error" role="alert">
+                  {errors.title}
+                </p>
+              )}
             </div>
 
-            <dl className="detail-definition-list">
-              <div className="detail-item">
-                <dt>Category</dt>
-                <dd>{categoryLabel}</dd>
-              </div>
-              <div className="detail-item">
-                <dt>Campus Location</dt>
-                <dd>{item.location}</dd>
-              </div>
-              <div className="detail-item">
-                <dt>Reported By</dt>
-                <dd>{item.reporter_name}</dd>
-              </div>
-              <div className="detail-item">
-                <dt>Reported Date</dt>
-                <dd>{createdDate}</dd>
-              </div>
-              {updatedDate && (
-                <div className="detail-item">
-                  <dt>Last Updated</dt>
-                  <dd>{updatedDate}</dd>
-                </div>
-              )}
-            </dl>
-
-            {item.description && (
-              <div className="detail-description-box">
-                <h4 className="detail-desc-heading">Description</h4>
-                <p className="detail-desc-text">{item.description}</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Editable view for active items */
-          <form onSubmit={handleSave} noValidate>
-            <div className="modal-body">
-              <h2 id="modal-detail-title" className="sr-only">
-                Edit Item: {item.title}
-              </h2>
-
+            {/* Category & Status 2-col Grid */}
+            <div className="form-row">
               <div className="form-group">
-                <label htmlFor="edit-title" className="form-label">
-                  Item Title <span className="required-star">*</span>
+                <label htmlFor="edit-category" className="form-label">
+                  Category <span className="required-star" aria-hidden="true">*</span>
                 </label>
-                <input
-                  id="edit-title"
-                  type="text"
-                  className={`form-input ${errors.title ? 'form-input--error' : ''}`}
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  aria-describedby={errors.title ? 'edit-title-error' : undefined}
-                  required
-                />
-                {errors.title && (
-                  <p id="edit-title-error" className="field-error" role="alert">
-                    {errors.title}
-                  </p>
-                )}
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-category" className="form-label">
-                    Category
-                  </label>
+                <div className="select-wrapper">
                   <select
                     id="edit-category"
                     className="form-select"
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) => handleChange('category', e.target.value)}
                   >
                     {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
@@ -192,16 +195,18 @@ export default function ItemDetailModal({
                     ))}
                   </select>
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="edit-status" className="form-label">
-                    Status
-                  </label>
+              <div className="form-group">
+                <label htmlFor="edit-status" className="form-label">
+                  Status <span className="required-star" aria-hidden="true">*</span>
+                </label>
+                <div className="select-wrapper">
                   <select
                     id="edit-status"
                     className="form-select"
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    onChange={(e) => handleChange('status', e.target.value)}
                   >
                     <option value="LOST">Lost</option>
                     <option value="FOUND">Found</option>
@@ -209,97 +214,107 @@ export default function ItemDetailModal({
                   </select>
                 </div>
               </div>
-
-              <div className="form-group">
-                <label htmlFor="edit-location" className="form-label">
-                  Campus Location <span className="required-star">*</span>
-                </label>
-                <input
-                  id="edit-location"
-                  type="text"
-                  className={`form-input ${errors.location ? 'form-input--error' : ''}`}
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  aria-describedby={errors.location ? 'edit-location-error' : undefined}
-                  required
-                />
-                {errors.location && (
-                  <p id="edit-location-error" className="field-error" role="alert">
-                    {errors.location}
-                  </p>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="edit-description" className="form-label">
-                  Description
-                </label>
-                <textarea
-                  id="edit-description"
-                  className="form-textarea"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-
-              <div className="metadata-strip">
-                <span>Reported by: <strong>{item.reporter_name}</strong></span>
-                <span>Date: {createdDate}</span>
-              </div>
             </div>
 
-            <div className="modal-footer modal-footer--space-between">
-              <button
-                type="button"
-                className="btn btn-danger-outline"
-                onClick={() => onOpenDelete(item)}
-                id="btn-open-delete"
-              >
-                Delete Record
-              </button>
+            {/* Location */}
+            <div className="form-group">
+              <label htmlFor="edit-location" className="form-label">
+                Campus location <span className="required-star" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="edit-location"
+                type="text"
+                className={`form-input ${errors.location ? 'form-input--error' : ''}`}
+                value={formData.location}
+                onChange={(e) => handleChange('location', e.target.value)}
+                aria-describedby={errors.location ? 'edit-location-error' : undefined}
+                required
+              />
+              {errors.location && (
+                <p id="edit-location-error" className="field-error" role="alert">
+                  {errors.location}
+                </p>
+              )}
+            </div>
 
-              <div className="modal-actions-right">
+            {/* Description */}
+            <div className="form-group">
+              <label htmlFor="edit-description" className="form-label">
+                Description <span className="helper-label">(Optional)</span>
+              </label>
+              <textarea
+                id="edit-description"
+                className="form-textarea"
+                rows={3}
+                value={formData.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+              />
+            </div>
+
+            {/* Meta Row */}
+            <div className="modal-meta-row">
+              <span>
+                Reported by <strong className="reporter-name-meta">{item.reporter_name}</strong> · {formattedFullDate}
+              </span>
+            </div>
+          </div>
+
+          {/* Footer with Inline Delete Confirm */}
+          <div className="modal-footer modal-footer--space-between">
+            <div className="modal-footer-left">
+              {!isConfirmingDelete ? (
                 <button
                   type="button"
-                  className="btn btn-secondary"
-                  onClick={onClose}
-                  disabled={isSubmitting}
+                  className="btn-text-delete"
+                  onClick={() => setIsConfirmingDelete(true)}
+                  id="btn-trigger-delete"
                 >
-                  Cancel
+                  Delete
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isSubmitting}
-                  id="btn-save-changes"
-                >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
+              ) : (
+                <div className="inline-confirm-row">
+                  <span className="inline-confirm-text">Delete this item?</span>
+                  <button
+                    type="button"
+                    className="btn-inline-cancel"
+                    onClick={() => setIsConfirmingDelete(false)}
+                  >
+                    Cancel
+                  </button>
+                  <span className="inline-confirm-separator" aria-hidden="true">|</span>
+                  <button
+                    type="button"
+                    className="btn-inline-delete"
+                    onClick={() => onDelete(item.id)}
+                    disabled={isSubmitting}
+                    id="btn-confirm-delete"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
-          </form>
-        )}
 
-        {isClaimed && (
-          <div className="modal-footer modal-footer--space-between">
-            <button
-              type="button"
-              className="btn btn-danger-outline"
-              onClick={() => onOpenDelete(item)}
-              id="btn-open-delete-claimed"
-            >
-              Delete Record
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-            >
-              Close
-            </button>
+            <div className="modal-actions-right">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={isSubmitting}
+                id="btn-save-changes"
+              >
+                {isSubmitting ? 'Saving...' : 'Save changes'}
+              </button>
+            </div>
           </div>
-        )}
+        </form>
       </div>
     </div>
   );

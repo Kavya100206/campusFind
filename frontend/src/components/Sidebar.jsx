@@ -8,15 +8,14 @@ export default function Sidebar({
   onCloseSidebar,
 }) {
   const navItems = [
-    { id: 'ALL', label: 'All Items', count: stats ? stats.total : 0 },
-    { id: 'LOST', label: 'Lost', count: stats ? stats.lost : 0 },
-    { id: 'FOUND', label: 'Found', count: stats ? stats.found : 0 },
-    { id: 'CLAIMED', label: 'Claimed', count: stats ? stats.claimed : 0 },
+    { id: 'ALL', label: 'All items', count: stats ? stats.total : 0, icon: 'items' },
+    { id: 'LOST', label: 'Lost', count: stats ? stats.lost : 0, icon: 'lost' },
+    { id: 'FOUND', label: 'Found', count: stats ? stats.found : 0, icon: 'found' },
+    { id: 'CLAIMED', label: 'Claimed', count: stats ? stats.claimed : 0, icon: 'claimed' },
   ];
 
   return (
     <>
-      {/* Mobile/Tablet backdrop when sidebar is toggled open */}
       {isSidebarOpen && (
         <div
           className="sidebar-backdrop"
@@ -27,17 +26,17 @@ export default function Sidebar({
 
       <aside className={`app-sidebar ${isSidebarOpen ? 'app-sidebar--open' : ''}`}>
         <div className="sidebar-brand">
-          <div className="brand-logo-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <div className="brand-logo-mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="4" />
+              <circle cx="12" cy="12" r="4" />
             </svg>
           </div>
           <span className="brand-name">Campus Find</span>
         </div>
 
-        <nav className="sidebar-nav" aria-label="Status navigation">
-          <div className="sidebar-section-title">Directory</div>
+        <nav className="sidebar-nav" aria-label="Main directory navigation">
+          <div className="sidebar-section-label">Directory</div>
           <div className="sidebar-nav-list" role="tablist">
             {navItems.map((item) => {
               const isActive = selectedStatus === item.id;
@@ -53,8 +52,12 @@ export default function Sidebar({
                     if (onCloseSidebar) onCloseSidebar();
                   }}
                   id={`sidebar-nav-${item.id.toLowerCase()}`}
+                  title={`${item.label} (${item.count})`}
                 >
-                  <span className="sidebar-nav-label">{item.label}</span>
+                  <span className="sidebar-item-content">
+                    <span className="sidebar-item-bullet" aria-hidden="true" />
+                    <span className="sidebar-nav-label">{item.label}</span>
+                  </span>
                   <span className="sidebar-nav-count">{item.count}</span>
                 </button>
               );
@@ -63,7 +66,7 @@ export default function Sidebar({
         </nav>
 
         <div className="sidebar-footer">
-          <span>Campus Find · {new Date().getFullYear()}</span>
+          <span className="sidebar-footer-text">Campus Find · 2026</span>
         </div>
       </aside>
     </>

@@ -1,11 +1,21 @@
 import React from 'react';
 
 export default function StatsStrip({ stats, loading }) {
+  const total = stats ? stats.total : 0;
+  const lost = stats ? stats.lost : 0;
+  const found = stats ? stats.found : 0;
+  const claimed = stats ? stats.claimed : 0;
+
+  function calcPct(val) {
+    if (!stats || total === 0) return '0%';
+    return `${Math.round((val / total) * 100)}%`;
+  }
+
   const cards = [
-    { label: 'Total', value: stats ? stats.total : 0, key: 'total' },
-    { label: 'Lost', value: stats ? stats.lost : 0, key: 'lost' },
-    { label: 'Found', value: stats ? stats.found : 0, key: 'found' },
-    { label: 'Claimed', value: stats ? stats.claimed : 0, key: 'claimed' },
+    { label: 'Total', value: total, subtext: total > 0 ? '100% recorded' : '—', key: 'total' },
+    { label: 'Lost', value: lost, subtext: total > 0 ? `${calcPct(lost)} of total` : '—', key: 'lost' },
+    { label: 'Found', value: found, subtext: total > 0 ? `${calcPct(found)} of total` : '—', key: 'found' },
+    { label: 'Claimed', value: claimed, subtext: total > 0 ? `${calcPct(claimed)} of total` : '—', key: 'claimed' },
   ];
 
   return (
@@ -14,9 +24,12 @@ export default function StatsStrip({ stats, loading }) {
         {cards.map((card) => (
           <div key={card.key} className="stat-card">
             <span className="stat-label">{card.label}</span>
-            <span className="stat-value">
-              {loading && !stats ? '—' : card.value}
-            </span>
+            <div className="stat-content">
+              <span className="stat-value">
+                {loading && !stats ? '—' : card.value}
+              </span>
+              <span className="stat-pct">{card.subtext}</span>
+            </div>
           </div>
         ))}
       </div>

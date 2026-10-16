@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function Header({
+  selectedStatus,
   onOpenReport,
   reportButtonRef,
   searchTerm,
@@ -8,11 +9,29 @@ export default function Header({
   onToggleSidebar,
 }) {
   const [localSearch, setLocalSearch] = useState(searchTerm || '');
+  const searchInputRef = useRef(null);
+
+  // Keyboard shortcut '/' focuses search input
+  useEffect(() => {
+    function handleGlobalKeyDown(e) {
+      if (
+        e.key === '/' &&
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA' &&
+        document.activeElement.tagName !== 'SELECT'
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearchChange(localSearch);
-    }, 300);
+    }, 250);
     return () => clearTimeout(timer);
   }, [localSearch, onSearchChange]);
 
@@ -20,33 +39,53 @@ export default function Header({
     setLocalSearch(searchTerm || '');
   }, [searchTerm]);
 
+  const statusBreadcrumbs = {
+    ALL: 'All items',
+    LOST: 'Lost',
+    FOUND: 'Found',
+    CLAIMED: 'Claimed',
+  };
+
+  const currentSection = statusBreadcrumbs[selectedStatus] || 'All items';
+
   return (
     <header className="app-topbar">
       <div className="topbar-left">
+        {/* Mobile/Tablet sidebar toggle */}
         <button
           type="button"
           className="sidebar-toggle-btn"
           onClick={onToggleSidebar}
-          aria-label="Toggle navigation sidebar"
+          aria-label="Toggle navigation rail"
           id="btn-sidebar-toggle"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
 
-        <div className="topbar-mobile-brand">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        {/* Mobile logo icon */}
+        <div className="topbar-mobile-brand" aria-label="Campus Find">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="4" />
+            <circle cx="12" cy="12" r="4" />
           </svg>
-          <span className="topbar-brand-title">Campus Find</span>
+          <span className="topbar-brand-text">Campus Find</span>
         </div>
 
+        {/* Desktop Breadcrumb */}
+        <nav className="topbar-breadcrumb" aria-label="Breadcrumb">
+          <span className="breadcrumb-root">Items</span>
+          <span className="breadcrumb-separator">/</span>
+          <span className="breadcrumb-current">{currentSection}</span>
+        </nav>
+      </div>
+
+      <div className="topbar-center">
         <div className="topbar-search-box">
-          <svg className="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg className="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -54,13 +93,15 @@ export default function Header({
             Search items
           </label>
           <input
+            ref={searchInputRef}
             id="topbar-search-input"
             type="search"
             className="input-topbar-search"
-            placeholder="Search items, locations..."
+            placeholder="Search items or locations..."
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
           />
+          <kbd className="search-kbd" title="Press / to search">/</kbd>
         </div>
       </div>
 
@@ -72,7 +113,7 @@ export default function Header({
           onClick={onOpenReport}
           id="btn-report-item"
         >
-          + Report an item
+          + Report item
         </button>
       </div>
     </header>

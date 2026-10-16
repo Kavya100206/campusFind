@@ -4,9 +4,9 @@ import Header from './components/Header';
 import StatsStrip from './components/StatsStrip';
 import FilterBar from './components/FilterBar';
 import ItemTable from './components/ItemTable';
+import RecentActivity from './components/RecentActivity';
 import ItemFormModal from './components/ItemFormModal';
 import ItemDetailModal from './components/ItemDetailModal';
-import DeleteConfirmModal from './components/DeleteConfirmModal';
 import {
   fetchItems,
   fetchStats,
@@ -34,10 +34,7 @@ export default function App() {
   // Modals state
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [itemToDelete, setItemToDelete] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState(false);
 
   // Focus restoration ref
   const lastActiveElementRef = useRef(null);
@@ -136,7 +133,8 @@ export default function App() {
     try {
       setIsSubmitting(true);
       await updateItem(id, payload);
-      showToast('Record updated successfully.');
+      const wasClaim = payload.status === 'CLAIMED' && selectedItem?.status !== 'CLAIMED';
+      showToast(wasClaim ? 'Item marked as claimed.' : 'Item updated successfully.');
       setSelectedItem(null);
       lastActiveElementRef.current?.focus();
       await Promise.all([loadItems(), loadStats()]);
@@ -147,36 +145,19 @@ export default function App() {
     }
   }
 
-  // Handle open Delete Confirm Modal
-  function handleOpenDelete(item) {
-    setDeleteError(false);
-    setItemToDelete(item);
-  }
-
-  // Handle close Delete Confirm Modal
-  function handleCloseDelete() {
-    setItemToDelete(null);
-    setDeleteError(false);
-    if (!selectedItem) {
-      lastActiveElementRef.current?.focus();
-    }
-  }
-
-  // Handle confirm delete
-  async function handleConfirmDelete(id) {
+  // Handle delete Item (inline confirmation)
+  async function handleDeleteItem(id) {
     try {
-      setIsDeleting(true);
-      setDeleteError(false);
+      setIsSubmitting(true);
       await deleteItem(id);
-      showToast('Item record deleted.');
-      setItemToDelete(null);
+      showToast('Item deleted.');
       setSelectedItem(null);
       lastActiveElementRef.current?.focus();
       await Promise.all([loadItems(), loadStats()]);
     } catch (err) {
-      setDeleteError(true);
+      alert('Failed to delete item. Please try again.');
     } finally {
-      setIsDeleting(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -189,9 +170,18 @@ export default function App() {
 
   const totalItemsCount = stats ? stats.total : items.length;
 
+  // Section title mapping
+  const sectionTitles = {
+    ALL: 'All items',
+    LOST: 'Lost items',
+    FOUND: 'Found items',
+    CLAIMED: 'Claimed items',
+  };
+  const currentSectionTitle = sectionTitles[selectedStatus] || 'All items';
+
   return (
     <div className="app-layout">
-      {/* Fixed Left Sidebar (>=1024px) or Drawer on Tablet */}
+      {/* 232px Sidebar */}
       <Sidebar
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
@@ -200,10 +190,11 @@ export default function App() {
         onCloseSidebar={() => setIsSidebarOpen(false)}
       />
 
-      {/* Main Workspace Container */}
+      {/* Main Workspace */}
       <div className="app-workspace">
-        {/* Slim Top Bar: Search on left, Report button on right */}
+        {/* 56px Top Bar */}
         <Header
+          selectedStatus={selectedStatus}
           onOpenReport={handleOpenReport}
           reportButtonRef={reportBtnRef}
           searchTerm={searchQuery}
@@ -211,17 +202,17 @@ export default function App() {
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
         />
 
-        {/* Content Body */}
+        {/* Content Area */}
         <main className="main-content">
-          {/* Page Heading & One-liner */}
-          <div className="page-header">
-            <h1 className="page-title">Campus Find</h1>
-            <p className="page-tagline">Lost it. Found it. Back to you.</p>
+          {/* Section Header: Section name, not app name */}
+          <div className="section-header">
+            <h1 className="section-title">{currentSectionTitle}</h1>
+            <p className="section-tagline">Lost it. Found it. Back to you.</p>
           </div>
 
           {errorMessage && (
             <div className="error-banner" role="alert">
-              {errorMessage}
+              <span>{errorMessage}</span>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
@@ -236,10 +227,10 @@ export default function App() {
             </div>
           )}
 
-          {/* Global Statistics Strip */}
+          {/* Stat Cards Strip */}
           <StatsStrip stats={stats} loading={loading} />
 
-          {/* Single-row Filter Bar: Mobile Pills & Category Dropdown */}
+          {/* Unified Toolbar Above Table: Segmented control + Category select + Chips */}
           <FilterBar
             selectedStatus={selectedStatus}
             onStatusChange={setSelectedStatus}
@@ -248,24 +239,26 @@ export default function App() {
             stats={stats}
           />
 
-          {/* Items Directory Table / Cards */}
-          <ItemTable
-            items={items}
-            loading={loading}
-            totalItemsCount={totalItemsCount}
-            onSelectItem={handleSelectItem}
-            onOpenReport={handleOpenReport}
-            onClearFilters={handleClearFilters}
-          />
+          {/* Dashboard Main Grid: Table & Recent Activity */}
+          <div className="dashboard-content-grid">
+            <div className="grid-main-table">
+              <ItemTable
+                items={items}
+                loading={loading}
+                totalItemsCount={totalItemsCount}
+                onSelectItem={handleSelectItem}
+                onOpenReport={handleOpenReport}
+                onClearFilters={handleClearFilters}
+              />
+            </div>
+            <aside className="grid-side-activity">
+              <RecentActivity items={items} onSelectItem={handleSelectItem} />
+            </aside>
+          </div>
         </main>
-
-        {/* Slim Footer */}
-        <footer className="app-footer">
-          <span>Campus Find · {new Date().getFullYear()}</span>
-        </footer>
       </div>
 
-      {/* Modals */}
+      {/* Report Item Dialog */}
       <ItemFormModal
         isOpen={isReportOpen}
         onClose={handleCloseReport}
@@ -273,25 +266,17 @@ export default function App() {
         isSubmitting={isSubmitting}
       />
 
+      {/* Edit / Claim / Delete Dialog with inline confirm */}
       <ItemDetailModal
         item={selectedItem}
         isOpen={Boolean(selectedItem)}
         onClose={handleCloseDetail}
         onUpdate={handleUpdateItem}
-        onOpenDelete={handleOpenDelete}
+        onDelete={handleDeleteItem}
         isSubmitting={isSubmitting}
       />
 
-      <DeleteConfirmModal
-        item={itemToDelete}
-        isOpen={Boolean(itemToDelete)}
-        onClose={handleCloseDelete}
-        onConfirmDelete={handleConfirmDelete}
-        isDeleting={isDeleting}
-        deleteError={deleteError}
-      />
-
-      {/* Toast Notification */}
+      {/* Plain CSS Auto-dismiss Toast */}
       {toastMessage && (
         <div className="toast" role="status" aria-live="polite">
           {toastMessage}
